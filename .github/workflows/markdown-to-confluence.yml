@@ -1,0 +1,85 @@
+name: Markdown to Confluence
+on:
+  push:
+    branches: [ master ]
+    # paths:
+    #   - '**'
+    #   - '!.gitignore'
+    #   - '!README.md'
+  # workflow_dispatch: # 允许手动触发工作流
+  # schedule:
+  #   # 每天晚六点十分执行一次
+  #   - cron:  '10 10 * * *'
+
+env:
+  SEPARATOR: "," # 定义多文件分割符
+  START_PREFIX: "<!--" # 定义需要同步的文件
+
+jobs:
+  confluence:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出文件
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 获取变更的文件
+      - name: Get changed files
+        id: changed-markdown-files
+        uses: tj-actions/changed-files@v44.5.5
+        with:
+          files: |
+            **.md
+            **.png
+          files_ignore: |
+            **.tpl.md
+          quotepath: false
+          separator: ${{env.SEPARATOR}}
+          old_new_files_separator: ";"
+
+      # 打印所有变更的文件
+      - name: Print all changed files
+        if: steps.changed-markdown-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
+        run: |
+          IFS=${SEPARATOR}
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed, realfile $(echo $file | tr -d '\\')"
+          done
+
+      # 构建添加 mark 指令
+      - name: Setup mark
+        if: steps.changed-markdown-files.outputs.any_changed == 'true'
+        uses: fabasoad/setup-mark-action@v1.0.1
+
+      # 编译以及发布到
+      - name: Mark markdown and sync to confluence
+        if: steps.changed-markdown-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
+          MARK_USER: ${{ secrets.ATLASSIAN_USERNAME }}
+          MARK_PASS: ${{ secrets.ATLASSIAN_API_TOKEN }}
+          MARK_URL: ${{ secrets.ATLASSIAN_BASE_URL }}
+        run: |
+          IFS=${SEPARATOR}
+          for file in ${ALL_CHANGED_FILES}; do
+            if [[ $(head -n 1 $(echo $file | tr -d '\\')) =~ ^$START_PREFIX ]]; then
+              # 打印文件第一行信息
+              head -n 1 $(echo $file | tr -d '\\')
+              # 配置图片大小为 750
+              # sed -i -E 's/(.*\!\[.*\]\(.*\))([ ]*<\!\-\-[ ]*width=[0-9]*[ ]*\-\->)*/\1<!-- width=750 -->/g' $(echo $file | tr -d '\\')
+              # path 替换
+              # sed -i -E 's/(.*\!\[.*\]\([ \t]*([a-zA-Z]\:)?(\.*(\/|\\))?([^:\r\n\t\!]*\.[a-zA-Z]+)[ \t]*\))([ ]*<\!\-\-[ \t]*width=[0-9]*[ \t]*\-\->)*/\1<!-- width-attach=750 -->/g' $(echo $file | tr -d '\\')
+              # url 替换
+              sed -i -E 's/(.*\!\[.*\]\([ \t]*(http(s)?:\/\/)([^:\r\n\t\!]*(\.[a-zA-Z]+)?)[ \t]*\))([ ]*<\!\-\-[ \t]*width=[0-9]*[ \t]*\-\->)*/\1<!-- width=750 -->/g' $(echo $file | tr -d '\\')
+              # 构建及发布, 正式请使用这个
+              # mark --ci --debug --trace -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
+              # 本地测试使用
+              mark --ci --debug --trace --compile-only -f $(echo $file | tr -d '\\') || exit 1;
+            else
+              echo "$(echo $file | tr -d '\\') not config metadata info, ignore file"
+            fi
+          done
