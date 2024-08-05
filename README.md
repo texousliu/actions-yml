@@ -18,11 +18,15 @@
 ## 自用 Github Actions
 - 自己编写的一些有用的 github action 工具
 
-## [英文/English](doc/en/README_EN.md)
+## [英文/English][README_EN]
 
 ## 功能特性列表
 - [X] 自动同步 `Markdown` 文件到 `Confluence`
   - 将 `Markdown` 语法转化为 `Confluence` 标记语言
   - 将转化后的内容通过 `rest api` 发布到 `Confluence`
   - 不需要 `Confluence` 安装 `Markdown` 插件
-  - [使用手册](doc/zh/同步Markdown文档到Confluence.md)
+  - [使用手册][SyncMarkdownToConfluence]
+
+
+[README_EN]: doc/en/README_EN.md
+[SyncMarkdownToConfluence]: doc/zh/同步Markdown文档到Confluence.md
