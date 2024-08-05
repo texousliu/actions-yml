@@ -78,7 +78,7 @@ jobs:
               # 构建及发布, 正式请使用这个
               # mark --ci --debug --trace -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
               # 本地测试使用
-              mark --ci --debug --trace --compile-only -f $(echo $file | tr -d '\\') || exit 1;
+              mark --ci --debug --trace --compile-only --include-path $(pwd) -f $(echo $file | tr -d '\\') || exit 1;
             else
               echo "$(echo $file | tr -d '\\') not config metadata info, ignore file"
             fi
