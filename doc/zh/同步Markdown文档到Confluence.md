@@ -1,3 +1,20 @@
+<!-- Space: documents -->
+<!-- Parent: actions -->
+<!-- Title: 同步Markdown文档到Confluence.md -->
+
+<!-- Macro: \!\[.*\]\((.+)\)\<\!\-\- width=(.*) \-\-\>
+     Template: ac:image
+     Url: ${1}
+     Width: ${2} -->
+<!-- Macro: :toc:
+     Template: ac:toc
+     Printable: 'false'
+     MinLevel: 2 
+     MaxLevel: 4 -->
+<!-- Include: doc/other/disclaimer.md -->
+
+:toc:
+
 ## 前置说明
 - 由于本文档也配置了 `mark metadata` 信息，文档中的某些标记会被强制替换，所以这边先做如下说明
     1. 脚本中的所有 `:TOC:` 中的 `TOC` 在使用时需要小写
@@ -24,6 +41,8 @@
      Printable: 'false'
      MinLevel: 2 
      MaxLevel: 4 -->
+<!-- Include: doc/other/disclaimer.md -->
+
 :TOC:
 ```
 ### `metadata` 说明
@@ -156,7 +175,7 @@ jobs:
               # url 替换
               sed -i -E 's/(.*\!\[.*\]\([ \t]*(http(s)?:\/\/)([^:\r\n\t\!]*(\.[a-zA-Z]+)?)[ \t]*\))([ ]*<\!\-\-[ \t]*width=[0-9]*[ \t]*\-\->)*/\1<!-- width=750 -->/g' $(echo $file | tr -d '\\')
               # 构建及发布
-              mark --ci --debug --trace -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
+              mark --ci --debug --trace --include-path $(pwd) -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
             else
               echo "$(echo $file | tr -d '\\') not config metadata info, ignore file"
             fi

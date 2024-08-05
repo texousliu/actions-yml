@@ -1,3 +1,20 @@
+<!-- Space: documents -->
+<!-- Parent: actions -->
+<!-- Title: SyncMarkdownToConfluence.md -->
+
+<!-- Macro: \!\[.*\]\((.+)\)\<\!\-\- width=(.*) \-\-\>
+     Template: ac:image
+     Url: ${1}
+     Width: ${2} -->
+<!-- Macro: :toc:
+     Template: ac:toc
+     Printable: 'false'
+     MinLevel: 2 
+     MaxLevel: 4 -->
+<!-- Include: doc/other/disclaimer.md -->
+
+:toc:
+
 ## Preface
 - Since this document also configures `mark metadata` information, some tags in the document will be forcibly replaced, so here are the following instructions
   1. All `TOC` in `:TOC:` in the script need to be lowercase when used
@@ -24,6 +41,8 @@
      Printable: 'false'
      MinLevel: 2 
      MaxLevel: 4 -->
+<!-- Include: doc/other/disclaimer.md -->
+
 :TOC:
 ```
 ### `metadata` description
@@ -158,7 +177,7 @@ jobs:
               # url convert
               sed -i -E 's/(.*\!\[.*\]\([ \t]*(http(s)?:\/\/)([^:\r\n\t\!]*(\.[a-zA-Z]+)?)[ \t]*\))([ ]*<\!\-\-[ \t]*width=[0-9]*[ \t]*\-\->)*/\1<!-- width=750 -->/g' $(echo $file | tr -d '\\')
               # build and deploy
-              mark --ci --debug --trace -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
+              mark --ci --debug --trace --include-path $(pwd) -p $MARK_PASS -b $MARK_URL -f $(echo $file | tr -d '\\') || exit 1;
             else
               echo "$(echo $file | tr -d '\\') not config metadata info, ignore file"
             fi
